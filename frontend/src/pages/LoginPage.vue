@@ -60,7 +60,7 @@ function waitForGoogle(callback, retries = 50) {
 
 onMounted(() => {
   waitForGoogle(() => {
-    window.google.accounts.id.intialize({
+    window.google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
       callback: handleCredentialResponse,
     });
