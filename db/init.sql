@@ -182,14 +182,4 @@ CREATE TABLE IF NOT EXISTS app_settings (
 INSERT INTO app_settings (id, vault_visibility) VALUES (1, 'shared') ON CONFLICT (id) DO NOTHING;
 
 
--- ----------------------------------------------------------------------------
--- 7. Seed TWO superadmins (break-glass: each can recover the other).
---    ON CONFLICT DO NOTHING makes this safe to re-run.
---    >>> REPLACE placeholder emails with real Google account emails. <<<
--- ----------------------------------------------------------------------------
-INSERT INTO users (email, name, role, status) VALUES
-    ('REPLACE_ME_admin1@example.com', 'Superadmin 1', 'superadmin', 'approved'),
-    ('REPLACE_ME_admin2@example.com', 'Superadmin 2', 'superadmin', 'approved')
-ON CONFLICT (email) DO NOTHING;
-
 COMMIT;
