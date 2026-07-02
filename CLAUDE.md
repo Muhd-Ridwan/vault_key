@@ -155,7 +155,7 @@ Browser
       → view / add secret
             → backend checks TOTP unlock window (server-side, session-tied)
             → if window expired: client prompts 6-digit code
-            → pyotp verifies → unlock window set (~10–15 min)
+            → pyotp verifies → unlock window set (~30 min)
             → Fernet decrypts (view) or encrypts (add)
       → every action  →  INSERT into audit_log (append-only)
 ```
@@ -183,7 +183,7 @@ between a Cloudflare Pages frontend and a separate API origin.
    auth yet. Prove parameterized queries work end to end. ← START HERE
 3. Google login + approval gate (verify ID token, check users table, issue our JWT)
 4. Vault CRUD with Fernet encryption (no TOTP yet — get encryption reversible)
-5. TOTP step-up (enroll via QR, verify, **server-side unlock window ~10–15 min**)
+5. TOTP step-up (enroll via QR, verify, **server-side unlock window ~30 min**)
 6. Audit logging wired into every action (view/create/update/delete/approve/login)
 7. Vue frontend (Google button, list+eye+add, TOTP prompt, audit page)
 8. Dockerize + deploy behind Cloudflare

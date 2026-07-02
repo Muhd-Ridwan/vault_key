@@ -30,15 +30,15 @@ async def get_totp_secret_plaintext(user_id: str) -> str | None:
         "SELECT secret, confirmed FROM totp_secrets WHERE user_id = %s",
         (user_id,),
     )
-    if row is None:
+    if row is None or not row["confirmed"]:
         return None
     return decrypt(bytes(row["secret"]))
 
 
-def set_unlock(user_id: str) -> None:
-    unlock_windows[user_id] = datetime.now(timezone.utc) + timedelta(
-        minutes=UNLOCK_MINUTES
-    )
+def set_unlock(user_id: str) -> datetime:
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=UNLOCK_MINUTES)
+    unlock_windows[user_id] = expires_at
+    return expires_at
 
 
 # ROUTES
@@ -67,7 +67,7 @@ async def enroll(current_user: dict = Depends(get_current_user)) -> dict:
     if existing and existing["confirmed"]:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="TOTP already enrolled. Use /unlock to verify your code.",
+            detail="TOTP already active on your account.",
         )
 
     plain_secret = pyotp.random_base32()
@@ -111,13 +111,13 @@ async def verify_enrollment(
     if row["confirmed"]:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Already confirmed. Use /unlock to start a session.",
+            detail="TOTP already active on your account",
         )
 
     plain_secret = decrypt(bytes(row["secret"]))
     totp = pyotp.TOTP(plain_secret)
 
-    if not totp.verify(body.code):
+    if not totp.verify(body.code, valid_window=1):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid TOTP code.",
@@ -127,13 +127,16 @@ async def verify_enrollment(
         "UPDATE totp_secrets SET confirmed = TRUE WHERE user_id = %s",
         (user_id,),
     )
-    set_unlock(user_id)
+    expires_at = set_unlock(user_id)
     await log_action(
         actor=current_user,
         action="enroll_totp",
         detail="TOTP enrollment complete.",
     )
-    return {"message": "TOTP enrolled and unlocked."}
+    return {
+        "message": "TOTP enrolled and unlocked.",
+        "expires_at": expires_at.isoformat(),
+    }
 
 
 @router.post("/unlock")
@@ -150,13 +153,16 @@ async def unlock(
             detail="TOTP not enrolled. Call /enroll first.",
         )
     totp = pyotp.TOTP(plain_secret)
-    if not totp.verify(body.code):
+    if not totp.verify(body.code, valid_window=1):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid TOTP code.",
         )
-    set_unlock(user_id)
-    return {"message": f"Unlocked for {UNLOCK_MINUTES} minutes."}
+    expires_at = set_unlock(user_id)
+    return {
+        "message": f"Unlocked for {UNLOCK_MINUTES} minutes.",
+        "expires_at": expires_at.isoformat(),
+    }
 
 
 @router.delete("/reset/{user_id}")

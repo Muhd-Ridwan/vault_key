@@ -129,7 +129,8 @@ CREATE TABLE IF NOT EXISTS audit_log (
                           'reject_user',
                           'revoke_user',
                           'reset_totp',
-                          'enroll_totp'
+                          'enroll_totp',
+                          'update_settings'
                       )),
     entry_id      UUID REFERENCES vault_entries(id),   -- nullable; soft link
     target_label  TEXT,                                -- SNAPSHOT of entry title at action time
@@ -170,7 +171,19 @@ CREATE TABLE IF NOT EXISTS access_requests (
 
 
 -- ----------------------------------------------------------------------------
--- 6. Seed TWO superadmins (break-glass: each can recover the other).
+-- 6. app_settings — single-row global configuration
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS app_settings (
+    id INTEGER PRIMARY KEY DEFAULT 1,
+    vault_visibility TEXT NOT NULL DEFAULT 'shared' CHECK (vault_visibility IN ('shared', 'private')),
+    CONSTRAINT single_row CHECK (id = 1)
+);
+
+INSERT INTO app_settings (id, vault_visibility) VALUES (1, 'shared') ON CONFLICT (id) DO NOTHING;
+
+
+-- ----------------------------------------------------------------------------
+-- 7. Seed TWO superadmins (break-glass: each can recover the other).
 --    ON CONFLICT DO NOTHING makes this safe to re-run.
 --    >>> REPLACE placeholder emails with real Google account emails. <<<
 -- ----------------------------------------------------------------------------

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     google_client_id: str
     resend_api: str
     resend_email_from: str
+    frontend_url: str
 
 
 settings = Settings()

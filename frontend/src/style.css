@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --color-vault-black: #0f1117;
+  --color-steel-panel: #1c2033;
+  --color-steel-elevated: #242840;
+  --color-border: #2e3250;
+  --color-gold: #c9a84c;
+  --color-text-primary: #e8eaf0;
+  --color-text-muted: #8b92a8;
+  --color-success: #4caf7c;
+  --color-danger: #c94c4c;
+
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-vault-black);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+  }
+}

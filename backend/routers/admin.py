@@ -3,15 +3,27 @@ import math
 from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from audit import log_action
+from pydantic import BaseModel, field_validator
 from db import execute, fetch_one, fetch_all
 from dependencies import get_current_user
+from .auth import send_approval_email
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+
+class VisibilityUpdate(BaseModel):
+    visibility: str
+
+    @field_validator("visibility")
+    @classmethod
+    def must_be_valid(cls, v: str) -> str:
+        if v not in {"shared", "private"}:
+            raise ValueError("visibility must be 'shared' or 'private'")
+        return v
+
+
 # HELPERS
-
-
 def require_superadmin(current_user: dict = Depends(get_current_user)) -> dict:
     if current_user["role"] != "superadmin":
         raise HTTPException(
@@ -98,10 +110,12 @@ async def approve_access_request(
         """
         INSERT INTO users (email, name, role, status)
         VALUES (%s, %s, 'member', 'approved')
-        ON CONFLICT (email) DO NOTHING
+        ON CONFLICT (email) DO UPDATE SET status = 'approved'
         """,
         (row["email"], row["name"]),
     )
+
+    await send_approval_email(to_email=row["email"], name=row["name"])
 
     await log_action(
         actor=current_user,
@@ -306,3 +320,26 @@ async def list_audit_logs(
         "page": page,
         "pages": math.ceil(total / limit) if total > 0 else 1,
     }
+
+
+@router.get("/settings")
+async def get_settings(current_user: dict = Depends(require_superadmin)) -> dict:
+    row = await fetch_one("SELECT vault_visibility FROM app_settings WHERE id = 1")
+    return {"vault_visibility": row["vault_visibility"] if row else "shared"}
+
+
+@router.put("/settings/visibility")
+async def update_visibility(
+    body: VisibilityUpdate,
+    current_user: dict = Depends(require_superadmin),
+) -> dict:
+    await execute(
+        "UPDATE app_settings SET vault_visibility = %s WHERE id = 1",
+        (body.visibility,),
+    )
+    await log_action(
+        actor=current_user,
+        action="update_settings",
+        detail=f"Vault visibility set to {body.visibility}",
+    )
+    return {"vault_visibility": body.visibility}

@@ -57,6 +57,7 @@ async def list_entries(
     date_from: date | None = Query(None),
     date_to: date | None = Query(None),
     created_by_name: str | None = Query(None),
+    title: str | None = Query(None),
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     visibility = await get_visibility()
@@ -73,6 +74,9 @@ async def list_entries(
     if date_to:
         conditions.append("ve.created_at::date <= %s")
         params.append(date_to)
+    if title:
+        conditions.append("ve.title ILIKE %s")
+        params.append(f"{title}%")
     # Created by name filter only applies
     if visibility == "shared" and created_by_name:
         conditions.append("u.name ILIKE %s")
@@ -189,7 +193,7 @@ async def reveal_secret(
 async def update_entry(
     entry_id: str,
     body: VaultEntryUpdate,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_totp_unlock),
 ) -> dict:
     row = await fetch_one(
         "SELECT id FROM vault_entries WHERE id = %s AND is_deleted = FALSE",

@@ -1,6 +1,7 @@
 import logging
 import jwt
 import resend
+import html
 
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, HTTPException, Request, status
@@ -61,7 +62,7 @@ async def send_approval_email(to_email: str, name: str) -> None:
                 "to": to_email,
                 "subject": "Your Vault Key Access has been approved",
                 "html": f"""
-                <p>Hi {name}, </p>
+                <p>Hi {html.escape(name)}, </p>
                 <p>Your request to access VaultKey has been approved.</p>
                 <p>You can now sign in using your Google account.</p>
                 <p>Best Regards</p>
@@ -158,13 +159,13 @@ async def request_access(body: AccessRequestForm) -> dict:
             {
                 "from": settings.resend_email_from,
                 "to": settings.resend_email_from,
-                "subject": f"New Vault Key access request from {body.name}",
+                "subject": f"New Vault Key access request from {html.escape(body.name)}",
                 "html": f"""
                 <p>A new access request has been submitted.</p>
-                <p><strong>Name:</strong> {body.name}</p>
-                <p><strong>Email:</strong> {body.email}</p>
-                <p><strong>Phone:</strong> {body.phone}</p>
-                <p><strong>Reason:</strong> {body.reason}</p>
+                <p><strong>Name:</strong> {html.escape(body.name)}</p>
+                <p><strong>Email:</strong> {html.escape(body.email)}</p>
+                <p><strong>Phone:</strong> {html.escape(body.phone)}</p>
+                <p><strong>Reason:</strong> {html.escape(body.reason)}</p>
                 <p>Best Regards</p>
                 <p>Ridwan</p>
             """,
