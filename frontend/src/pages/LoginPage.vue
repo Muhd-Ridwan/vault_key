@@ -48,16 +48,28 @@ const router = useRouter();
 const errorMessage = ref("");
 const needsAccessRequest = ref(false);
 
-onMounted(() => {
-  window.google.accounts.id.initialize({
-    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-    callback: handleCredentialResponse,
-  });
+function waitForGoogle(callback, retries = 50) {
+  if (window.google?.accounts?.id) {
+    callback();
+  } else if (retries > 0) {
+    setTimeout(() => waitForGoogle(callback, retries - 1), 100);
+  } else {
+    errorMessage.value = "Could not load Google sign-in. Refresh the page.";
+  }
+}
 
-  window.google.accounts.id.renderButton(
-    document.getElementById("google-signin-btn"),
-    { theme: "filled_black", size: "large", width: 200 },
-  );
+onMounted(() => {
+  waitForGoogle(() => {
+    window.google.accounts.id.intialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      callback: handleCredentialResponse,
+    });
+
+    window.google.accounts.id.renderButton(
+      document.getElementById("google-signin-btn"),
+      { theme: "filled_black", size: "large", width: 200 },
+    );
+  });
 });
 
 async function handleCredentialResponse(response) {
