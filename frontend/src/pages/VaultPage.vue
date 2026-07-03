@@ -27,28 +27,63 @@
       </div>
       <!-- Filters -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
-        <input
-          v-model="filters.title"
-          type="text"
-          placeholder="Search by title..."
-          class="bg-steel-panel border border-border text-text-primary text-sm rounded-lg px-3 py-2 w-full placeholder:text-text-muted focus:outline-none focus:border-gold"
-        />
-        <input
-          v-model="filters.name"
-          type="text"
-          placeholder="Search by creator name..."
-          class="bg-steel-panel border border-border text-text-primary text-sm rounded-lg px-3 py-2 w-full placeholder:text-text-muted focus:outline-none focus:border-gold"
-        />
-        <input
-          v-model="filters.dateFrom"
-          type="date"
-          class="bg-steel-panel border border-border text-text-muted text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-gold"
-        />
-        <input
-          v-model="filters.dateTo"
-          type="date"
-          class="bg-steel-panel border border-border text-text-muted text-sm rounded-lg px-3 py-2 w-full focus:outline-none focus:border-gold"
-        />
+        <div class="flex flex-col gap-1">
+          <label class="text-text-muted text-xs">Search by Title</label>
+          <div class="relative">
+            <input
+              v-model="filters.title"
+              type="text"
+              placeholder="e.g. SSH"
+              class="bg-steel-panel border border-border text-text-primary text-sm rounded-lg px-3 py-2 w-full placeholder:text-text-muted focus:outline-none focus:border-gold"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-text-muted text-xs">
+            Search by Creator Name
+          </label>
+          <div class="relative">
+            <input
+              v-model="filters.name"
+              type="text"
+              placeholder="e.g. Ridwan"
+              class="bg-steel-panel border border-border text-text-primary text-sm rounded-lg px-3 py-2 w-full placeholder:text-text-muted focus:outline-none focus:border-gold"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-text-muted text-xs">From Date</label>
+          <div class="relative">
+            <input
+              v-model="filters.dateFrom"
+              type="date"
+              placeholder="mm/dd/yyyy"
+              class="relative bg-steel-panel border border-border text-text-muted text-sm placeholder:text-text-muted rounded-lg pl-3 py-2 pr-9 w-full focus:outline-none focus:border-gold"
+            />
+            <Calendar
+              :size="16"
+              class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted"
+            />
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-text-muted text-xs">To Date</label>
+          <div class="relative">
+            <input
+              v-model="filters.dateTo"
+              type="date"
+              placeholder="mm/dd/yyyy"
+              class="relative bg-steel-panel border border-border text-text-muted text-sm placeholder:text-text-muted rounded-lg pl-3 pr-9 py-2 w-full focus:outline-none focus:border-gold"
+            />
+            <Calendar
+              :size="16"
+              class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted"
+            />
+          </div>
+        </div>
+
         <div class="flex gap-2 sm:col-span-2">
           <button
             @click="applyFilters"
@@ -113,6 +148,12 @@
               <span class="text-text-primary text-sm font-mono">{{
                 entry.username
               }}</span>
+              <button
+                @click="copyToClipboard(entry.username)"
+                class="text-text-muted hover:text-gold transition-colors"
+              >
+                <Copy :size="15" />
+              </button>
             </div>
             <div v-if="entry.url" class="flex items-center gap-2">
               <span class="text-text-muted text-xs w-20">URL</span>
@@ -130,10 +171,14 @@
               }}</span>
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-text-muted text-xs w-20">Secret</span>
-              <span class="text-text-primary text-sm font-mono">{{
-                revealedSecrets[entry.id] ?? "••••••••"
-              }}</span>
+              <span class="text-text-muted text-xs w-20 shrink-0">Secret</span>
+              <div class="flex-1 min-w-0 overflow-x-auto">
+                <span
+                  class="text-text-primary text-sm font-mono whitespace-nowrap"
+                  >{{ revealedSecrets[entry.id] ?? "••••••••" }}</span
+                >
+              </div>
+
               <button
                 @click="revealSecret(entry.id)"
                 class="ml-2 text-text-muted hover:text-gold transition-colors"
@@ -240,7 +285,15 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import { Plus, Eye, ChevronDown, Copy, Pencil, Trash2 } from "lucide-vue-next";
+import {
+  Plus,
+  Eye,
+  ChevronDown,
+  Copy,
+  Pencil,
+  Trash2,
+  Calendar,
+} from "lucide-vue-next";
 import api from "../services/api.js";
 import { useToastStore } from "../stores/toast.js";
 import AddEntryModal from "../components/AddEntryModal.vue";
@@ -404,3 +457,14 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+</style>

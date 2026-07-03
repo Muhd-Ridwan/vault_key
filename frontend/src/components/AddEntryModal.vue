@@ -1,10 +1,10 @@
 <template>
   <div
-    class="fixed inset-0 z-40 flex items-center justify-center bg-black/60"
+    class="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4"
     @click.self="$emit('close')"
   >
     <div
-      class="bg-steel-elevated border border-border rounded-xl p-6 w-full max-w-md flex flex-col gap-4"
+      class="bg-steel-elevated border border-border rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto flex flex-col gap-4"
     >
       <div class="flex items-center justify-between">
         <h2 class="text-text-primary font-medium">Add Entry</h2>
@@ -171,3 +171,10 @@ async function submit() {
   }
 }
 </script>
+
+<style scoped>
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  cursor: pointer;
+}
+</style>
