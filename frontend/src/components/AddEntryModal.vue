@@ -171,10 +171,3 @@ async function submit() {
   }
 }
 </script>
-
-<style scoped>
-input[type="date"]::-webkit-calendar-picker-indicator {
-  opacity: 0;
-  cursor: pointer;
-}
-</style>
