@@ -66,7 +66,7 @@
               v-if="!filters.dateFrom"
               class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm"
             >
-              mm/dd/yy
+              mm/dd/yyyy
             </span>
             <Calendar
               :size="16"
@@ -87,7 +87,7 @@
               v-if="!filters.dateTo"
               class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm"
             >
-              mm/dd/yy
+              mm/dd/yyyy
             </span>
             <Calendar
               :size="16"
@@ -193,14 +193,14 @@
 
               <button
                 @click="revealSecret(entry.id)"
-                class="ml-2 text-text-muted hover:text-gold transition-colors"
+                class="ml-2 text-text-muted hover:text-gold transition-colors shrink-0"
               >
                 <Eye :size="15" />
               </button>
               <button
                 v-if="revealedSecrets[entry.id]"
                 @click="copyToClipboard(revealedSecrets[entry.id])"
-                class="text-text-muted hover:text-gold transition-colors"
+                class="text-text-muted hover:text-gold transition-colors shrink-0"
               >
                 <Copy :size="15" />
               </button>
@@ -458,16 +458,6 @@ function onEntrySaved() {
   showAddModal.value = false;
   loadEntries(currentPage.value);
 }
-
-onMounted(async () => {
-  loadEntries();
-  try {
-    const res = await api.get("/auth/totp/status");
-    if (!res.data.enrolled) showEnrollModal.value = true;
-  } catch {
-    // Silent skip. Vault still loads
-  }
-});
 </script>
 
 <style scoped>
