@@ -53,7 +53,7 @@
           </div>
         </div>
 
-        <div class="flex flex-col gap-1">
+        <div class="flex flex-col gap-1 min-w-0">
           <label class="text-text-muted text-xs">From Date</label>
           <div class="relative">
             <input
@@ -68,7 +68,7 @@
             />
           </div>
         </div>
-        <div class="flex flex-col gap-1">
+        <div class="flex flex-col gap-1 min-w-0">
           <label class="text-text-muted text-xs">To Date</label>
           <div class="relative">
             <input
