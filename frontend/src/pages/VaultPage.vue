@@ -62,12 +62,6 @@
               placeholder="mm/dd/yyyy"
               class="relative bg-steel-panel border border-border text-text-muted text-sm placeholder:text-text-muted rounded-lg pl-3 py-2 pr-9 w-full focus:outline-none focus:border-gold"
             />
-            <span
-              v-if="!filters.dateFrom"
-              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm"
-            >
-              mm/dd/yyyy
-            </span>
             <Calendar
               :size="16"
               class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted"
@@ -83,12 +77,6 @@
               placeholder="mm/dd/yyyy"
               class="relative bg-steel-panel border border-border text-text-muted text-sm placeholder:text-text-muted rounded-lg pl-3 pr-9 py-2 w-full focus:outline-none focus:border-gold"
             />
-            <span
-              v-if="!filters.dateTo"
-              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm"
-            >
-              mm/dd/yyyy
-            </span>
             <Calendar
               :size="16"
               class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted"
@@ -295,7 +283,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import {
   Plus,
@@ -338,6 +326,7 @@ const userRole = payload?.role ?? "";
 const totpStore = useTotpStore();
 
 let expiryTimer = null;
+let titleSearchTimer = null;
 
 onMounted(async () => {
   loadEntries();
@@ -445,6 +434,16 @@ function applyFilters() {
   loadEntries(1);
 }
 
+watch(
+  () => filters.value.title,
+  () => {
+    clearTimeout(titleSearchTimer);
+    titleSearchTimer = setTimeout(() => {
+      loadEntries(1);
+    }, 350);
+  },
+);
+
 function resetFilters() {
   filters.value = { name: "", title: "", dateFrom: "", dateTo: "" };
   loadEntries(1);
@@ -458,6 +457,11 @@ function onEntrySaved() {
   showAddModal.value = false;
   loadEntries(currentPage.value);
 }
+
+onUnmounted(() => {
+  clearTimeout(titleSearchTimer);
+  clearInterval(expiryTimer);
+});
 </script>
 
 <style scoped>
