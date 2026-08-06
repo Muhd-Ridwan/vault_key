@@ -4,6 +4,7 @@ import VaultPage from "../pages/VaultPage.vue";
 import RequestAccessPage from "../pages/RequestAccessPage.vue";
 import AdminPage from "../pages/AdminPage.vue";
 import { parseJwt } from "../utils/jwt.js";
+import TotpSettingsPage from "../pages/TotpSettingsPage.vue";
 
 const routes = [
   {
@@ -26,6 +27,11 @@ const routes = [
   {
     path: "/vault",
     component: VaultPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/settings/totp",
+    component: TotpSettingsPage,
     meta: { requiresAuth: true },
   },
 ];

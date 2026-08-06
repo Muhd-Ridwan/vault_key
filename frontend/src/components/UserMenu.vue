@@ -33,6 +33,14 @@
         >
           Vault
         </RouterLink>
+        <RouterLink
+          v-if="route.path !== '/settings/totp'"
+          to="/settings/totp"
+          @click="open = false"
+          class="flex items-center px-4 py-2.5 text-sm text-text-muted hover:text-text-primary hover:bg-steel-panel transition-colors"
+        >
+          MFA devices
+        </RouterLink>
         <button
           @click="logout"
           class="w-full text-left flex items-center px-4 py-2.5 text-sm text-text-muted hover:text-danger hover:bg-steel-panel transition-colors"
