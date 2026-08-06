@@ -1,5 +1,8 @@
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+    @click.self="totpStore.cancel()"
+  >
     <div
       class="bg-steel-elevated border border-border rounded-xl p-6 w-full max-w-sm flex flex-col gap-4"
     >
@@ -22,13 +25,22 @@
       <p v-if="errorMessage" class="text-danger text-sm text-center">
         {{ errorMessage }}
       </p>
-      <button
-        @click="submit"
-        :disabled="submitting || code.length !== 6"
-        class="bg-gold text-vault-black text-sm font-medium px-4 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
-      >
-        {{ submitting ? "Verifying..." : "Verify" }}
-      </button>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          @click="totpStore.cancel()"
+          class="flex-1 bg-steel-panel border border-border text-text-secondary text-sm font-medium px-4 py-2 rounded-lg cursor-pointer hover:bg-danger hover:text-white hover:border-danger transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          @click="submit"
+          :disabled="submitting || code.length !== 6"
+          class="flex-1 bg-gold text-vault-black text-sm font-medium px-4 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+        >
+          {{ submitting ? "Verifying..." : "Verify" }}
+        </button>
+      </div>
     </div>
   </div>
 </template>

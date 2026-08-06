@@ -1,5 +1,7 @@
 <template>
-  <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
+  <div
+    class="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4"
+  >
     <div
       class="bg-steel-elevated border border-border rounded-xl p-6 w-full max-w-md flex flex-col gap-5"
     >
@@ -8,13 +10,37 @@
           Set Up Two-Factor Authentication
         </h2>
         <p class="text-text-muted text-xs">
-          Scan the QR code with your authenticator app (Google Authenticator,
-          Authy, etc.), then enter the 6-digit code to confirm.
+          {{
+            step === "label"
+              ? "Give this device a name so you can recognize it later."
+              : "Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.), then enter the 6-digit code to confirm."
+          }}
         </p>
       </div>
-      <div v-if="loading" class="text-text-muted text-sm text-center py-4">
-        Generating QR code...
-      </div>
+
+      <template v-if="step === 'label'">
+        <div class="flex flex-col gap-1">
+          <label class="text-text-muted text-xs">
+            Device Name <span class="text-danger">*</span>
+          </label>
+          <input
+            v-model="label"
+            type="text"
+            maxlength="50"
+            placeholder="e.g. User's Phone"
+            class="bg-steel-panel border border-border text-text-primary text-sm rounded-lg px-3 py-2 placeholder:text-text-muted focus:outline-none focus:border-gold"
+            @keyup.enter="startEnroll"
+          />
+        </div>
+        <button
+          @click="startEnroll"
+          :disabled="starting || !label.trim()"
+          class="bg-gold text-vault-black text-sm font-medium px-4 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+        >
+          {{ starting ? "Starting..." : "Continue" }}
+        </button>
+      </template>
+
       <template v-else>
         <div class="flex justify-center">
           <img
@@ -44,6 +70,7 @@
             maxlength="6"
             placeholder="000000"
             class="bg-steel-panel border border-border text-text-primary text-sm rounded-lg px-3 py-2 font-mono tracking-widest placeholder:text-text-muted focus:outline-none focus:border-gold"
+            @keyup.enter="verify"
           />
         </div>
         <button
@@ -59,54 +86,56 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import api from "../services/api";
 import { useToastStore } from "../stores/toast";
 import { useTotpStore } from "../stores/totp";
 
 const emit = defineEmits(["done"]);
 const toast = useToastStore();
-const loading = ref(true);
+const step = ref("label");
+const label = ref("");
+const starting = ref(false);
 const qrCode = ref("");
+const manualKey = ref("");
+const deviceId = ref("");
 const code = ref("");
 const submitting = ref(false);
-const manualKey = ref("");
 const totpStore = useTotpStore();
 
-onMounted(async () => {
+async function startEnroll() {
+  if (!label.value.trim()) return;
+  starting.value = true;
   try {
-    const res = await api.post("/auth/totp/enroll");
+    const res = await api.post("/auth/totp/enroll", {
+      label: label.value.trim(),
+    });
     qrCode.value = res.data.qr_code;
     manualKey.value = res.data.secret;
+    deviceId.value = res.data.device_id;
+    step.value = "qr";
   } catch (err) {
-    if (err.response?.status === 409) {
-      toast.show("Already enrolled. You can use the vault.", "success");
-      emit("done");
-      return;
-    }
     toast.show(
       err.response?.data?.detail || "Failed to start enrollment.",
       "error",
     );
   } finally {
-    loading.value = false;
+    starting.value = false;
   }
-});
+}
 
 async function verify() {
   if (code.value.length !== 6) return;
   submitting.value = true;
   try {
-    const res = await api.post("/auth/totp/verify", { code: code.value });
+    const res = await api.post("/auth/totp/verify", {
+      device_id: deviceId.value,
+      code: code.value,
+    });
     totpStore.unlock(res.data.expires_at);
     toast.show("Two-factor authentication activated.", "success");
     emit("done");
   } catch (err) {
-    if (err.response?.status === 409) {
-      toast.show("Already enrolled. You can now use the vault.", "success");
-      emit("done");
-      return;
-    }
     toast.show(
       err.response?.data?.detail || "Invalid code. Try again.",
       "error",

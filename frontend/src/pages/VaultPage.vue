@@ -416,6 +416,7 @@ async function revealSecret(id) {
     const res = await api.get(`/vault/entries/${id}/secret`);
     revealedSecrets.value[id] = res.data.secret;
   } catch (err) {
+    if (err.message === "totp_cancelled") return;
     if (err.response?.status === 401) router.push("/login");
     else toast.show("Failed to reveal secret.", "error");
   }
