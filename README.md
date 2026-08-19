@@ -21,6 +21,25 @@ It is **not** a zero-knowledge, Bitwarden-grade vault — that tradeoff is delib
 | Email      | Resend                                                                |
 | Infra      | Docker + docker-compose (VPS) + Cloudflare Pages (frontend)           |
 
+Login Page
+<img width="974" height="754" alt="image" src="https://github.com/user-attachments/assets/e946e6b6-4cfa-465c-b980-bd967cba8416" />
+<br />
+Main Dashboard
+<img width="2546" height="1265" alt="image" src="https://github.com/user-attachments/assets/3139d140-c152-419d-aba2-b339ddbe040f" />
+<br />
+Admin Panel
+<img width="2554" height="936" alt="image" src="https://github.com/user-attachments/assets/487c32b2-9ecc-42dc-8990-4f8d493c9534" />
+<br />
+MFA Device
+<img width="861" height="325" alt="image" src="https://github.com/user-attachments/assets/d05151b3-ddc4-4ef9-971a-a6c5ad4d1ee3" />
+<br />
+Adding New Entry
+<img width="995" height="997" alt="image" src="https://github.com/user-attachments/assets/a79827cb-a217-40cf-ad58-802f268333b8" />
+
+
+
+
+
 ## File structure
 
 ```
