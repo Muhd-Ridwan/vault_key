@@ -13,7 +13,7 @@ services:
       - vault_data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5430:5432"
+      - "127.0.0.1:5430:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -25,7 +25,7 @@ services:
     container_name: vaultkeydockrepo
     restart: always
     ports:
-      - "8002:8000"
+      - "127.0.0.1:8002:8000"
     env_file:
       - ./.env
     depends_on:
